@@ -1,0 +1,26 @@
+{
+    "id": "F6A06000",
+    "path": "C:/Users/torbskar/Universitetet i Oslo/Undervisningsplanlegging ISS - General/script/1_leseInnData.R",
+    "project_path": "script/1_leseInnData.R",
+    "type": "r_source",
+    "hash": "2367412071",
+    "contents": "",
+    "dirty": false,
+    "created": 1699809742431.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "393,36",
+        "scrollLine": "353"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1704747260,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1704747260266,
+    "read_only": false,
+    "read_only_alternatives": []
+}

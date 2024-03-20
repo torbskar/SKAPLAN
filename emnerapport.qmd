@@ -1,0 +1,102 @@
+---
+format: pdf
+geometry:
+  - top=30mm
+  - left=20mm
+  - right=30mm
+  - heightrounded
+---
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+library(gt)
+library(readxl)
+invisible(Sys.setlocale(locale='no_NB.utf8'))
+
+# Leser inn data
+budsjett <- read_rds("timebudsjett_emne.rds") %>% 
+  mutate(aktivitet = str_trim(aktivitet)) %>% 
+  mutate(aktivitet = case_when(aktivitet  %in% c("Hovedveileder", "Bi.veileder") ~ "Veiledning",
+                            aktivitet %in% c("lage_eksamen", "lage_utsatt_eksamen") ~ "Lage eksamen",
+                            aktivitet %in% c("forkurs", "video") ~ "annet",
+                            str_sub(aktivitet, 1, 6) == "sensur" ~ "sensur",
+                            str_sub(aktivitet, -6, -1) == "sensur" ~ "sensur", 
+                            TRUE ~ aktivitet)
+         ) 
+
+emnekode <- unique(budsjett$emne)
+
+
+```
+
+# Emnerapport `r emnekode`
+
+Dette er en oversikt over planlagt bemanning for emnet `r emnekode`  slik det ser ut per `r Sys.Date()`. Tallene er *antall* av hver aktivitet, talt som dobbelttimer forelesning, dobbelttime seminar, antall kandidater til sensur osv. 
+
+
+\begingroup
+\setlength{\LTleft}{0pt minus 500pt}
+\setlength{\LTright}{0pt minus 500pt}
+\fontsize{10pt}{12pt}\selectfont
+\addtolength{\tabcolsep}{-3pt}
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+budsjett %>% 
+  select(navn, aar, semester, aktivitet, antall) %>% 
+  pivot_wider(id_cols = c(navn, aktivitet), names_from = c(aar, semester), values_from = antall) %>% 
+  arrange(match(aktivitet, c("Emneansvar", "Forelesning", "Seminargrupper", "Lage Eksamen", "Lage Utsatt Eksamen", "Ordinær Sensur", "Sensur Utsatt"))) %>% 
+  relocate(aktivitet) %>% 
+  #slice(1:5) %>% 
+  gt(groupname_col = "aktivitet") %>% 
+  sub_missing(missing_text = "-") %>%
+  fmt_number(decimals = 1) %>% 
+  tab_stub_indent(
+    rows = everything(),
+    indent = 5) %>% 
+  tab_spanner_delim(
+    delim = "_"
+  ) %>% 
+  cols_label(
+    ends_with("1") ~ "Vår",
+    ends_with("2") ~ "Høst") %>% 
+  as_latex()
+
+```
+
+
+
+
+Oversikt over antall oppmeldte studenter og resultater tidligere år.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+emnegjennomforing <- read_xlsx("data/Emnegjennomforing.xlsx") %>% 
+  janitor::clean_names() %>% 
+  rename(emne = emne_1) %>% 
+  mutate(emne = stringr::word(emne, 1)) %>% 
+  select(arstall, emne, oppmeldte, bestatt_studenter, emnefrafall_percent, strykprosent, snittkarakter)
+
+emnegjennomforing %>% 
+  fill(emne) %>% 
+  filter(emne == emnekode) %>% 
+  mutate(frafall = paste( round(emnefrafall_percent*100, 1), "%"), 
+         strykprosent = paste( round(strykprosent*100, 2), "%"),
+         snittkarakter = round(snittkarakter, 1)) %>% 
+  rename(bestått = bestatt_studenter) %>% 
+  select(arstall, oppmeldte, bestått, frafall, strykprosent, snittkarakter) %>% 
+  gt() %>% 
+  as_latex()
+```
+
+
+\endgroup

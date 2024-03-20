@@ -1,0 +1,11 @@
+"0","tab %>% 
+    tab_spanner_delim(
+    delim = ""_""
+  ) %>% 
+  cols_label(
+    ends_with(""1"") ~ ""Vår"",
+    ends_with(""2"") ~ ""Høst"", 
+    paste0(sisteaar, ""_"", sistesemester) ~ ""SALDO"") %>% 
+  as_latex()
+"
+"0",""

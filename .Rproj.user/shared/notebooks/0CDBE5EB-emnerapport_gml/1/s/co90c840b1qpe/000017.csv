@@ -1,0 +1,34 @@
+"0","invisible(Sys.setlocale(locale='no_NB.utf8'))
+
+# Leser inn data
+budsjett <- read_rds(""timebudsjett_emne.rds"") %>% 
+  mutate(aktivitet = str_trim(aktivitet)) %>% 
+  mutate(aktivitet = case_when(aktivitet  %in% c(""Hovedveileder"", ""Bi.veileder"") ~ ""Veiledning"",
+                            aktivitet %in% c(""lage_eksamen"", ""lage_utsatt_eksamen"") ~ ""Lage eksamen"",
+                            aktivitet %in% c(""forkurs"", ""video"") ~ ""annet"",
+                            str_sub(aktivitet, 1, 6) == ""sensur"" ~ ""sensur"",
+                            str_sub(aktivitet, -6, -1) == ""sensur"" ~ ""sensur"", 
+                            TRUE ~ aktivitet)
+         ) 
+
+
+
+budsjett %>% 
+  select(navn, aar, semester, aktivitet, antall) %>% 
+  pivot_wider(id_cols = c(navn, aktivitet), names_from = c(aar, semester), values_from = antall) %>% 
+  arrange(match(aktivitet, c(""Emneansvar"", ""Forelesning"", ""Seminargrupper"", ""Lage Eksamen"", ""Lage Utsatt Eksamen"", ""Ordinær Sensur"", ""Sensur Utsatt""))) %>% 
+  relocate(aktivitet) %>% 
+  slice(1:5) %>% 
+  gt(groupname_col = ""aktivitet"", rowname_col = ""navn"") %>% 
+  fmt_number(decimals = 1) %>% 
+  tab_stub_indent(
+    rows = everything(),
+    indent = 5) %>% 
+  tab_spanner_delim(
+    delim = ""_""
+  ) %>% 
+  cols_label(
+    ends_with(""1"") ~ ""Vår"",
+    ends_with(""2"") ~ ""Høst"") 
+"
+"0",""

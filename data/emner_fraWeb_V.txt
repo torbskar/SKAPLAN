@@ -1,0 +1,46 @@
+Emne	Studiepoeng
+HGO4010 – Qualitative method	10
+HGO4020 – HGO Internship	10
+HGO4040 – Individual reading list	10
+HGO4080 – Master Thesis 30 Credits	30
+HGO4090 – Master Thesis 60 Credits	60
+HGO4604 – The futures of work	10
+HGO4605 – Transformations in the global economy: value chains and production networks	10
+HGO4940 – Advanced Geographic Information Systems	10
+HGO4941 – Advanced Spatial Data Analysis	10
+SGO1004 – Skrivetrening med samfunnsgeografisk prosjektarbeid	10
+SGO2100 – Bygeografi og urbanisme	10
+SGO2302 – Environment and society	10
+SGO3090 – Bacheloroppgave	10
+SGO3200 – Sustainability Transitions, Innovation and Social Change	10
+SGO3500 – Byers struktur og utvikling	10
+SGO9001 – Avhandlingsseminar: Introduksjon	1
+SGO9006 – Avhandlingsseminar: Mot levering	1
+SGO9050 – Avhandlingsseminar: Midtveisevaluering	0
+SGO9211 – Theory and practice for equitable and just transformations to sustainability	5
+SOS1100 – Sosiologisk teori	10
+SOS2100 – Ulikhet, klasse og lagdeling	10
+SOS2200 – Organisasjon, ledelse og arbeid	10
+SOS2402 – Family, gender equality and the welfare state	10
+SOS2500 – Kulturanalyse, diskurs og semiotikk	10
+SOS2901 – Anvendt maskinlæring for samfunnsvitere	10
+SOS2920 – Introduction to Digital Research Methods	10
+SOS2950 – Social Science Genetics	10
+SOS3090 – Sosiologisk analyse - bacheloroppgave	10
+SOS4001 – Sosiologisk teori	10
+SOS4016 – Individuelt leseemne i sosiologi	10
+SOS4022 – Advanced Statistical Methods	10
+SOS4050 – Masteroppgaven - forskningsdesign og prosjekthåndtering	10
+SOS4090 – Masteroppgave i sosiologi	60
+SOS4100 – Causes and consequences of social inequalities	10
+SOS4200 – Arbeidsliv og velferdsstat	10
+SOS4510 – Cultural sociology	10
+SOS9001 – Avhandlingsseminar: Introduksjon	1
+SOS9006 – Avhandlingsseminar: Mot levering	1
+SOS9008 – Qualitative Research Methods and Analysis	5
+SOS9009 – Advanced statistical methods course	5
+SOS9032 – Peer-reviewing and getting published in international journals	5
+SOS9050 – Avhandlingsseminar: Midtveisevaluering	0
+SOS9237 – Organizational Foundations of Inequality	5
+SOSGEO1120 – Kvantitativ metode	10
+SOSGEO2800 – Migrasjon, integrasjon og ulikhet	10

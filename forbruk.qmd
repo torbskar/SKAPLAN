@@ -1,0 +1,94 @@
+---
+title: "Forbrukt på emner og program"
+format: pdf
+
+---
+
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+library(lubridate)
+library(gt)
+library(stringr)
+
+budsjett <- readRDS("data/timebudsjett.rds")
+
+
+```
+
+
+## Forbruk per aktivitet
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+budsjett %>%
+  # mutate(semester = ifelse(str_sub(aar,-1,-1) == "V", 1, 2),
+  #        aar = str_sub(aar,1,4)) %>%
+  group_by(aktivitet, aar, semester) %>%
+  summarise(timer = sum(timer)) %>%
+  pivot_wider(names_from = c(aar, semester), values_from = timer) %>%
+  ungroup() %>%
+  gt(rowname_col = "aktivitet") %>%
+  sub_missing(columns = everything(),
+              rows = everything(),
+              missing_text = "---" ) %>%
+  fmt_number(n_sigfig = 1, suffixing = TRUE) %>%
+  grand_summary_rows(fns =  list(label = md("*SUM*"), id = "totals", fn = "sum"),
+    fmt = ~ fmt_number(., decimals = 0, n_sigfig = 3, suffixing = TRUE),
+    side = "bottom") %>%
+  tab_header(title = "Total ressursbruk per aktivitet", subtitle = "Antall timer uttelling i regnskap")
+
+```
+
+
+
+
+## Forbruk per program 
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+budsjett %>%
+    # mutate(semester = ifelse(str_sub(aar,-1,-1) == "V", 1, 2),
+    #      aar = str_sub(aar,1,4)) %>%
+  mutate(prog = case_when(str_sub(emne, 1, 6) == "KULKOM" ~ "KULKOM",
+                          str_sub(emne, 1, 5) %in% c("SOSGE", "SVMET") ~ "Fellesemner",
+                          str_sub(emne, 1, 3) == "SOS" ~ "Sosiologi",
+                          TRUE ~ "Andre aktiviteter"),
+         prog2 = prog) %>%
+  group_by(prog, aar, semester) %>%
+  summarise(timer = sum(timer)) %>%
+  pivot_wider(names_from = c(aar, semester), values_from = timer) %>%
+  ungroup() %>%
+  #gt() %>%
+  #gt(groupname_col = "prog") %>%
+  gt(rowname_col = "prog2", groupname_col = "prog") %>%
+  sub_missing(columns = everything(),
+              rows = everything(),
+              missing_text = "---" ) %>%
+  tab_stub_indent(
+    rows = everything(),
+    indent = 5
+  ) %>%
+  fmt_number(n_sigfig = 1, suffixing = FALSE) %>%
+  # summary_rows(
+  #   fns =  list(label = md("*SUM*"), id = "totals", fn = "sum"),
+  #   fmt = ~ fmt_number(., decimals = 0, suffixing = FALSE,
+  #                      drop_trailing_zeros = TRUE),
+  #   side = "bottom"
+  # ) %>%
+  grand_summary_rows(fns =  list(label = md("*SUM*"), id = "totals", fn = "sum"),
+    fmt = ~ fmt_number(., decimals = 0, suffixing = FALSE),
+    side = "bottom") %>%
+  tab_header(title = "Total ressursbruk per program", subtitle = "Antall timer uttelling i regnskap")
+
+
+```
+

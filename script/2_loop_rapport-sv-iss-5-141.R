@@ -1,0 +1,160 @@
+invisible(Sys.setlocale(locale='no_NB.utf8'))
+
+## Kjører ut rapporter 
+library(tidyverse)
+library(readxl)
+library(stringr)
+
+rm(list=(ls()))
+
+
+#source("script/1_leseInnData.R")
+
+## Log fil
+sink("log.Rtxt", append = TRUE)
+  print( paste("Sist rapport kjørt:", Sys.time()))
+sink()
+
+
+# ## Create file structure 
+# if(dir.exists("personrapport/")){ 
+#   files2zip <- dir('personrapport', full.names = TRUE)
+#   zip(zipfile = paste0('arkiv/personrapport_', Sys.Date()), files = files2zip)
+#   unlink("personrapport/", recursive = TRUE)
+#   dir.create("personrapport")
+# } else {
+#   dir.create("personrapport")
+# }
+
+# Siste år/semester for timeregnskapet
+sisteaar <- 2023
+sistesemester <- 2
+
+# Lese inn data ####
+budsjett <- readRDS("data/timebudsjett.rds") %>% 
+  filter(str_detect(aktivitet, "Saldo") | 
+           (aar > sisteaar | 
+              (aar == sisteaar & semester > sistesemester) )) %>% 
+  mutate(aktivitet = ifelse(str_sub(aktivitet,1,5) == "Saldo", "Saldo", aktivitet)) %>% 
+  mutate(aktivitet = factor(aktivitet)) %>% 
+  mutate(aktivitet = fct_relevel(aktivitet, 
+                                 "Saldo", "Lopendefaglig", "Kontakttid",
+                                 "Emneansvar", "Forelesning", 
+                                 "Lage Eksamen", "Lage Utsatt Eksamen", 
+                                 "Seminargrupper", 
+                                 "Ordinær Sensur", "Sensur Utsatt", "Klagesensur",
+                                 "Annet")) %>% 
+  mutate(aktivitet = fct_relevel(aktivitet, "Annet", after = Inf)) 
+
+budsjett %>%
+  filter(str_detect(navn, "Nora"))
+
+
+# budsjett %>%
+#   filter(str_detect(navn, "Schiermer")) %>%
+#   arrange(aar, semester, emne, aktivitet) %>%
+#   #filter(str_detect(aktivitet, "Saldo")) %>%
+#   View()
+
+# budsjett %>% 
+#   filter(emne == "SOSGEO1120", aar == 2023) %>% 
+#   select(navn, emne, aar, semester, aktivitet)
+
+
+
+personer <- budsjett %>% 
+  filter(navn != "Annen") %>% 
+  group_by(navn) %>% 
+  slice(1) %>% 
+  pull(navn) %>% 
+  str_squish()
+
+# Hvem som ikke er i stab
+# personer[!(personer %in% stab$navn) ]
+
+stab_navn <- read_excel("data/stab_2023.xlsx") %>% 
+  mutate(navn = `Etter- og fornavn`) %>% 
+  mutate(navn = paste(str_squish( str_split_i(navn, ",", 2) ),
+                      paste0(str_squish( str_split_i(navn, ",", 1) )) ) ) %>% 
+  pull(navn) 
+
+stab_nye <- readxl::read_excel("data/stab_nye.xlsx") %>% 
+  arrange(navn) %>% 
+  pull(navn) 
+
+stab_navn <- c(stab_navn, stab_nye)
+str_equal(stab_navn[str_detect(stab_navn, "Nora")], 
+          personer[str_detect(personer, "Nora")], 
+          ignore_case = TRUE)
+
+
+personer_stab <- personer[( tolower(personer) %in% tolower(stab_navn)) ] %>% unique()
+
+
+#personer_stab <- personer_stab[str_detect( tolower(personer_stab), "nora")]
+
+
+pathdir <- paste0(getwd(), "/personrapport/")
+
+#View(persondata)
+
+for(person in personer_stab){
+  print(person)
+  
+  persondata <- budsjett %>% 
+    filter(navn == person)
+  
+  saveRDS(persondata, file= "timebudsjett_person.rds")
+  
+  ## FUll report
+  filnavn <- paste(person, ".pdf", sep='')
+  quarto::quarto_render(input = "personrapport.qmd", 
+                    output_file = filnavn) 
+
+  file.copy(from = paste0(here::here(), "/", filnavn), 
+            to = paste0(here::here(), "/personrapport/", filnavn),
+            overwrite = TRUE)
+  file.remove(paste0(here::here(), "/", filnavn))
+  
+  #rm(list=ls()[!(ls() %in% c("person", "personer", "pathrmd", "pathdir", "wd", "dato"))])
+  #file.remove("emne.RDat")
+}
+
+
+
+
+## Rapporter per emne ####
+pathdir <- paste0(getwd(), "/emnerapport/")
+emner <- budsjett %>% 
+  filter(str_sub(emne,1,3) %in% c("SOS", "KUL", "UTV", "SVL", "SVM", "HGO", "SGO", "OLA")) %>% 
+  pull(emne) %>% 
+  unique() 
+
+#emnet <- "SVLEP3090"
+for(emnet in emner){
+  print(emnet)
+  
+  emnedata <- budsjett %>% 
+    #filter(str_sub(emne,1,3) %in% c("SOS", "KUL", "UTV", "SVL", "SVM", "HGO", "SGO", "OLA")) %>% 
+    filter(emne == emnet)
+  
+  saveRDS(emnedata, file= "timebudsjett_emne.rds")
+  
+  ## FUll report
+  filnavn <- paste(emnet, ".pdf", sep='')
+  quarto::quarto_render(input = "emnerapport.qmd", 
+                        output_file = filnavn) 
+  
+  file.copy(from = paste0(here::here(), "/", filnavn), 
+            to = paste0(here::here(), "/emnerapport/", filnavn),
+            overwrite = TRUE)
+  file.remove(paste0(here::here(), "/", filnavn))
+  
+}
+
+
+
+
+# # Remove all old files
+# files <- list.files()[!(list.files() %in% c(list.files(pattern = ".R"), list.files(pattern = ".zip")) )]
+# unlink(files, recursive = FALSE)

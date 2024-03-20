@@ -1,0 +1,122 @@
+---
+title: "Oversikt budsjettert per person"
+format: pdf
+geometry:
+  - top=30mm
+  - left=20mm
+  - right=30mm
+  - heightrounded
+---
+
+\begingroup
+\setlength{\LTleft}{0pt minus 500pt}
+\setlength{\LTright}{0pt minus 500pt}
+\fontsize{10pt}{12pt}\selectfont
+\addtolength{\tabcolsep}{-3pt}
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| error: false
+library(tidyverse)
+library(gt)
+library(lubridate)
+invisible(Sys.setlocale(locale='no_NB.utf8'))
+
+source("script/stab_andreFolk.R", verbose = FALSE)
+
+
+sisteaar <- 2023
+sistesemester <- 2
+
+# Leser inn data
+budsjett <- read_rds("data/timebudsjett.rds") %>% 
+  filter(navn %in% stab$navn) %>%
+    filter(aar <= year(Sys.Date())+3 ) %>% 
+    filter(str_detect(aktivitet, "Saldo") | 
+           (aar > sisteaar | 
+              (aar == sisteaar & semester > sistesemester) )) 
+
+
+ # budsjett %>%
+ #   filter(str_detect(navn, "Haldor Byrkjeflot")) %>%
+ #    View()
+
+
+```
+
+
+
+### Faste ansatte
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| error: false
+tab <- budsjett %>% 
+  filter( !(Stillingsgruppe %in% c("1017 Stipendiat", "1352 Postdoktor"))) %>% 
+  group_by(navn, aar, semester) %>%
+  summarise(timer = sum(timer)) %>%
+  #filter(timer > 0) %>%
+  arrange(aar, semester) %>%
+  pivot_wider(names_from = c(aar, semester), values_from = timer) %>% 
+  arrange(navn) %>% 
+  ungroup() %>%  
+  gt() %>% 
+  sub_missing(missing_text = "-") %>% 
+  fmt_number(decimals = 0)
+
+tab %>% 
+    tab_spanner_delim(
+    delim = "_"
+  ) %>% 
+  cols_label(
+    ends_with("1") ~ "Vår",
+    ends_with("2") ~ "Høst", 
+    paste0(sisteaar, "_", sistesemester) ~ "SALDO") %>% 
+  as_latex()
+
+```
+
+### Midlertidige ansatte
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| error: false
+tab <- budsjett %>% 
+  filter(Stillingsgruppe %in% c("1017 Stipendiat", "1352 Postdoktor")) %>% 
+  group_by(navn, aar, semester) %>%
+  summarise(timer = sum(timer)) %>%
+  #filter(timer > 0) %>%
+  arrange(aar, semester) %>%
+  pivot_wider(names_from = c(aar, semester), values_from = timer) %>% 
+  arrange(navn) %>% 
+  ungroup() %>%  
+  gt() %>% 
+  sub_missing(missing_text = "-") %>% 
+  fmt_number(decimals = 0)
+
+tab %>% 
+    tab_spanner_delim(
+    delim = "_"
+  ) %>% 
+  cols_label(
+    ends_with("1") ~ "Vår",
+    ends_with("2") ~ "Høst", 
+    paste0(sisteaar, "_", sistesemester) ~ "REST") %>% 
+  as_latex()
+
+
+```
+
+
+
+
+
+
+\endgroup

@@ -1,0 +1,49 @@
+Emne	Studiepoeng
+HGO4011 – Philosophy and methodology of human geography	10
+HGO4040 – Individual reading list	10
+HGO4080 – Master Thesis 30 Credits	30
+HGO4090 – Master Thesis 60 Credits	60
+HGO4201 – Urban geographical theory	10
+HGO4202 – Urbanism - urban policies and planning	10
+HGO4301 – The Social Dimensions of Environmental Change	10
+HGO4302 – Transformations to sustainability	10
+HGO4401 – Democratization and civil society in developing countries	10
+HGO4601 – Economic geography: Institutions, evolution and sustainability transitions	10
+HGO4605 – Transformations in the global economy: value chains and production networks	10
+SGO1001 – Innføring i samfunnsgeografi	10
+SGO1910 – Introduction to Geographical Information Systems (GIS)	10
+SGO2200 – Economic globalisation and regional development	10
+SGO2400 – Politisk geografi	10
+SGO2500 – North/South Development: Energy transitions and sustainability	10
+SGO9001 – Avhandlingsseminar: Introduksjon	1
+SGO9006 – Avhandlingsseminar: Mot levering	1
+SGO9050 – Avhandlingsseminar: Midtveisevaluering	0
+SGO9209A – Scaling Transformations to Sustainability in Theory and Practice	5
+SGO9209B – Scaling Transformations to Sustainability in Theory and Practice	2
+SOS1004 – Innføring i sosiologi	10
+SOS2000 – Sosiologisk teoretisering	10
+SOS2001 – Anvendt sosiologisk teori	10
+SOS2100 – Ulikhet, klasse og lagdeling	10
+SOS2305 – Avvik, kriminalitet og straff	10
+SOS2550 – The Sociology of Small Groups Subcultures	10
+SOS2603 – Nordic welfare society - contemporary perspectives	10
+SOS2650 – Makt og motstand: Innføring i politisk sosiologi	10
+SOS2700 – Religious fundamentalism, extremism and violence	10
+SOS4001 – Sosiologisk teori	10
+SOS4010 – Kvalitativ metode	10
+SOS4013 – Klasse og ulikhet - sentrale debatter	10
+SOS4020 – Kvantitativ metode	10
+SOS4090 – Masteroppgave i sosiologi	60
+SOS4100 – Causes and consequences of social inequalities	10
+SOS4150 – Population Health and Health Inequalities	10
+SOS4510 – Cultural sociology	10
+SOS9001 – Avhandlingsseminar: Introduksjon	1
+SOS9006 – Avhandlingsseminar: Mot levering	1
+SOS9009 – Advanced statistical methods course	5
+SOS9050 – Avhandlingsseminar: Midtveisevaluering	0
+SOS9235 – Gender equality, family change and family policy: new theoretical developments	5
+SOS9236 – Contemporary Social Theory	5
+SOSGEO2400 – Introduksjon til demografi	10
+SOSGEO4210 – Sosiologiske perspektiver på organisasjon og ledelse	10
+SVMET1010 – Kvalitative metoder	10
+

@@ -1,0 +1,72 @@
+---
+title: "Timebudsjett overordnet rapport"
+format: pdf
+geometry:
+  - top=30mm
+  - left=20mm
+  - right=30mm
+  - heightrounded
+---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+library(gt)
+
+# Leser inn data
+budsjett <- read_rds("timebudsjett_emne.rds") %>% 
+  mutate(aktivitet = str_trim(aktivitet)) %>% 
+  mutate(aktivitet = case_when(aktivitet  %in% c("Hovedveileder", "Bi.veileder") ~ "Veiledning",
+                            aktivitet %in% c("lage_eksamen", "lage_utsatt_eksamen") ~ "Lage eksamen",
+                            aktivitet %in% c("forkurs", "video") ~ "annet",
+                            str_sub(aktivitet, 1, 6) == "sensur" ~ "sensur",
+                            str_sub(aktivitet, -6, -1) == "sensur" ~ "sensur", 
+                            TRUE ~ aktivitet)
+         ) 
+
+
+```
+
+
+
+
+
+## Planlagt ressursbruk per emne 
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| results: asis
+tab <- budsjett %>% 
+  filter(aar <= year(Sys.Date())+3)  %>% 
+  group_by(aktivitet, aar, semester) %>% 
+  summarise(timer = sum(timer)) %>% 
+  pivot_wider(names_from = c(aar, semester), values_from = timer) %>% 
+  ungroup() %>% 
+  gt(rowname_col = "aktivitet", groupname_col = "emne") %>% 
+  sub_missing(columns = everything(),
+              rows = everything(),
+              missing_text = "---" ) %>%  
+    gt::grand_summary_rows(columns = where(is.numeric),
+                       fns =  list(SUM = ~sum(., na.rm = T)),
+                       fmt = ~ fmt_number(., use_seps = FALSE, decimals = 0)) %>% 
+    fmt_number(decimals = 0) %>% 
+
+  tab_stub_indent(
+    rows = everything(),
+    indent = 5
+  ) 
+
+tab %>% 
+    tab_spanner_delim(
+    delim = "_"
+  ) %>% 
+  cols_label(
+    ends_with("1") ~ "Vår",
+    ends_with("2") ~ "Høst") %>% 
+  as_latex()
+
+```

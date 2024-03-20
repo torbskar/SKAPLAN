@@ -1,0 +1,394 @@
+invisible(Sys.setlocale(locale='no_NB.utf8'))
+library(tidyverse)
+library(readxl)
+
+
+# All ordinær undervisning ####
+
+files <- list.files("emner/") 
+files <- files[endsWith(files, ".xlsx") & 
+                 !startsWith(files, "Enkeltemner") & 
+                 !startsWith(files, "veiledning") &
+                 !startsWith(files, "ekstra") &
+                 !startsWith(files, "stab") &
+                 !startsWith(files, "uniped")]
+
+list_all <- list(length(files))
+
+for(i in 1:length(files)){ 
+  print(files[i])
+  fil <- paste0("emner/", files[i])
+  
+  sheet_names <- excel_sheets(fil)[-c(1:2)]  # unntatt første sheet
+                               
+  emne_aar <- lapply(sheet_names, function(x) {          # Read all sheets to list
+    as.data.frame(read_excel(fil, 
+                             sheet = x,
+                             skip = 8,
+                             col_types = c("text", "text", rep("numeric", 9), "text")) 
+                  ) |> 
+      mutate(aar = x,
+             emne = gsub('.xlsx', '', files[i]))
+    } 
+    ) %>% 
+    bind_rows() %>% 
+    rename_with(tolower) %>% 
+    #select(-kommentar) %>% 
+    pivot_longer(cols = -c(emne, aar, navn, avtalt, kommentar), 
+                 names_to = "aktivitet", 
+                 values_to = "timer") %>% 
+    filter(!is.na(timer) )    
+    
+  list_all[[i]] <- emne_aar 
+  }
+
+# bind_rows(list_all) %>% 
+#   pull(aktivitet) %>% 
+#   unique()
+
+
+# Master veiledning ####
+files_v <- list.files("data/") 
+files_v <- files_v[endsWith(files_v, ".xlsx") & startsWith(files_v, "vei")]
+
+fil_v <- paste0("data/", files_v)[1]
+# read_excel(fil_v) %>% 
+#   head()
+
+sheet_names <- excel_sheets(fil_v)
+
+veil_ma <- lapply(sheet_names, function(x) {          # Read all sheets to list
+  as.data.frame(read_excel(fil_v, 
+                           sheet = x) 
+  ) |> 
+    mutate(aar = x,
+           emne = "SOS4090", 
+           aktivitet = "veiledning_ma") %>% 
+    select(navn,  emne, aar, aktivitet)   
+} 
+) %>% 
+  bind_rows() %>% 
+  arrange(navn, aar)
+
+#head(veil_ma)
+
+# Ekstra ####
+fil <- paste0("data/ekstra.xlsx")
+
+sheet_names <- excel_sheets(fil)
+
+ekstratimer <- lapply(sheet_names, function(x) {          # Read all sheets to list
+  as.data.frame(read_excel(fil, 
+                           sheet = x,
+                           col_types = "text") ) |> 
+    mutate(aar = x,
+           timer = as.numeric(timer)) 
+  } 
+) %>% 
+  bind_rows()
+
+
+# Uniped ####
+fil <- paste0("data/uniped.xlsx")
+sheet_names <- excel_sheets(fil)[excel_sheets(fil) != "stab"]
+
+unipedtimer <- lapply(sheet_names, function(x) {          # Read all sheets to list
+  as.data.frame(read_excel(fil, 
+                           sheet = x,
+                           col_types = "text") ) 
+} 
+) %>% 
+  bind_rows() %>% 
+  mutate(aar = paste(aar, semester),
+         timer = as.numeric(timer),
+         emne = "Uniped") %>% 
+  select(-semester)
+
+
+# Norskkurs ####
+fil <- paste0("data/norskkurs.xlsx")
+sheet_names <- excel_sheets(fil)[excel_sheets(fil) != "stab"]
+
+norskkurs <- lapply(sheet_names, function(x) {          # Read all sheets to list
+  as.data.frame(read_excel(fil, 
+                           sheet = x,
+                           col_types = "text") ) 
+} 
+) %>% 
+  bind_rows() %>% 
+  mutate(aar = paste(aar, semester),
+         timer = as.numeric(timer),
+         emne = "Norskkurs") %>% 
+  select(-semester)
+
+glimpse(norskkurs)
+
+# Utland phd ####
+fil <- paste0("data/utenlandsopphold.xlsx")
+sheet_names <- excel_sheets(fil)[excel_sheets(fil) != "stab"]
+
+utlandstimer <- lapply(sheet_names, function(x) {          # Read all sheets to list
+  as.data.frame(read_excel(fil, 
+                           sheet = x,
+                           col_types = "text") ) 
+} 
+) %>% 
+  bind_rows() %>% 
+  mutate(aar = paste(aar, semester),
+         timer = as.numeric(timer),
+         emne = "Utenlandsopphold fratrekk") %>% 
+  select(-semester)
+
+
+# Lederverv ####
+#verv <- read_xlsx("data/verv.xlsx", sheet = "Verv")  
+
+fil <- paste0("data/verv.xlsx")
+sheet_names <- excel_sheets(fil)[excel_sheets(fil) != "stab"]
+
+verv <- lapply(sheet_names, function(x) {          # Read all sheets to list
+  as.data.frame(read_excel(fil, 
+                           sheet = x,
+                           col_types = "text") ) 
+} 
+) %>% 
+  bind_rows() %>% 
+  mutate(aar = paste(aar, semester),
+         antall = as.numeric(antall),
+         emne = "Verv") %>% 
+  select(-semester)
+
+
+
+
+# Frikjøp ####
+fri <- read_excel("data/Frikjøp 2023-2027.xlsx", 
+                  sheet = 1,
+                  skip = 4) %>% 
+  select(1:15) 
+
+glimpse(fri)
+
+names(fri) <- c("navn", "prosjekt", "tittel", "x1", "x2", 
+                "2023_eksternt", "2023_internt",
+                "2024_eksternt", "2024_internt",
+                "2025_eksternt", "2025_internt",
+                "2026_eksternt", "2026_internt",
+                "2027_eksternt", "2027_internt")
+
+fri %>%
+  select(-c(x1, x2)) %>% 
+  fill(navn) %>% 
+  filter(navn == "Are Skeie Hermansen")
+
+frikjop <- fri %>% 
+  select(-c(x1, x2)) %>% 
+  fill(navn) %>% 
+  filter(!is.na(navn)) %>%
+  filter(!is.na(prosjekt)) %>%
+  pivot_longer(cols = -c(1:3), values_to = c("pct"), names_to = "intekst") %>% 
+  mutate(aar = as.numeric(str_sub(intekst, 1,4)),
+         type = str_sub(intekst, 6,14)) %>% 
+  select(-intekst) %>% 
+  filter(!is.na(pct)) %>% 
+  group_by(navn, aar) %>% 
+  reframe(frikjop = sum(pct)/100) 
+
+frikjop <- frikjop %>% 
+  group_by(navn, aar) %>% 
+  expand(nesting(semester = c("V", "H"))) %>% 
+  left_join(frikjop, by = c("navn", "aar")) %>% 
+  mutate(timer = frikjop*898*.53,   ## Totalt timer og andel arbeidsplikt
+         emne = "Faste poster", 
+         aktivitet = "Frikjøp", 
+         aar = paste(aar, semester)) %>% 
+  select(-semester)
+
+# frikjop %>%
+#   filter(navn == "Are Skeie Hermansen")
+
+
+# setter filene sammen #### 
+timebudsjett0 <- list_all %>% 
+  bind_rows() %>% 
+  rename(antall = timer ) %>%          # Det er antall aktiviteter som registreres. Må regnes om.  
+  bind_rows(.,verv) %>% 
+  bind_rows(., utlandstimer) %>% 
+  bind_rows(., veil_ma) %>%
+  bind_rows(., ekstratimer) %>%
+  bind_rows(., unipedtimer) %>% 
+  bind_rows(., frikjop) %>% 
+  bind_rows(., norskkurs)
+
+glimpse(timebudsjett0)
+
+
+# Satser ####
+satser <- read_xlsx("data/satser.xlsx") %>% 
+  filter(!is.na(uttelling)) %>% 
+  select(kode, uttelling) %>% 
+  rename(aktivitet = kode) %>% 
+  arrange(aktivitet)
+View(satser)
+View(verv)
+
+timebudsjett0 %>% 
+  #filter(!is.na(aktivitet)) %>% 
+  pull(emne) %>% 
+  unique()
+
+
+## Regner ut timer fra statser ####
+budsjett <- timebudsjett0 %>% 
+  #filter(!is.na(antall)) %>% 
+  mutate(antall = case_when(aktivitet == "forelesning" ~ antall*2, 
+                            aktivitet == "emneansvar" & antall < 1 ~ antall*1.5, 
+                            aktivitet == "seminargruppe" ~ antall*2, 
+                            TRUE ~ antall)) %>% 
+  mutate(aktivitet2 = aktivitet) %>% 
+  mutate(aktivitet = case_when(aktivitet == "ordinær_sensur" ~ "sensur",
+                               aktivitet == "sensur_utsatt" ~ "sensur",
+                               aktivitet == "klagesensur" ~ "sensur",
+                               aktivitet == "lage_utsatt_eksamen" ~ "lage_eksamen",
+                               TRUE ~ aktivitet)) %>% 
+  # mutate(aktivitet = case_when(verv == "utdanningsleder" ~ "utdanningsleder",
+  #                              verv == "KULKOM programleder" ~ "programleder",
+  #                              verv == "UTV programleder" ~ "programleder",
+  #                              verv == "SGO programleder" ~ "programleder",
+  #                              verv == "HGO programleder" ~ "programleder",
+  #                              verv == "SOS programleder BA" ~ "programleder",
+  #                              verv == "SOS programleder MA" ~ "programleder",
+  #                              TRUE ~ aktivitet)) %>%
+  left_join(satser, by = "aktivitet") %>% 
+  mutate(uttelling = replace_na(uttelling, 1), 
+         uttelling = case_when(emne %in% c("SOS3090", "SVLEP3090", "KULKOM3090", # Omfattende sensur 
+                                           "SVMET1010", "SOS4010", "SOS4020") &
+                                 aktivitet == "sensor" ~ 1.5, 
+                               TRUE ~ uttelling)) %>%
+  mutate(timer = ifelse(is.na(timer), antall * uttelling, timer),          # Regner om til timer der antall er angitt. Ellers beholdes timer angitt. 
+         aktivitet = ifelse(is.na(verv), aktivitet2, aktivitet)) %>% 
+  select(-aktivitet2) 
+
+budsjett %>%
+  filter( str_detect(navn, "Synøve")) %>%
+  #filter(aktivitet == "programleder") %>% 
+  View()
+
+
+## Oversikt over person #### 
+stab <- read_excel("data/stab_2023.xlsx") %>% 
+  mutate(navn = `Etter- og fornavn`, 
+         Fratredelsesdato = ifelse(Fratredelsesdato == "-", NA_character_, Fratredelsesdato),
+         sluttdato = openxlsx::convertToDate(Fratredelsesdato)) %>% 
+  mutate(navn = paste(str_squish( str_split_i(navn, ",", 2) ),
+                      paste0(str_squish( str_split_i(navn, ",", 1) ))
+  )) %>% 
+  select(navn, Stillingsgruppe, Dellønnsprosent, sluttdato) %>% 
+  mutate(int_ekst = "intern")
+
+View(stab)
+# stab %>% 
+#   filter(navn == "Aleksander Årnes Madsen")
+
+
+## Faste tillegg ####
+
+iaar <- year(Sys.Date())
+fastetillegg <- stab %>% 
+  mutate(sluttdato = ifelse(is.na(sluttdato), as_date(ymd("2099-01-01")), sluttdato) |> as_date()) %>% 
+  group_by(navn, Stillingsgruppe, sluttdato) %>% 
+  expand(semester = c(1,2), 
+         aar = iaar:(iaar+4)) %>%  
+  arrange(navn, aar, semester) %>% 
+  mutate(sluttsemester = ifelse(month(sluttdato) <= 7, 1, 2 )) %>% 
+  filter(aar < year(sluttdato) | (aar == year(sluttdato) & semester <= sluttsemester ) ) %>% 
+  mutate(Lopendefaglig = 30, 
+         kontakttid = 20, 
+         undervisningsplikt = case_when(str_sub(Stillingsgruppe, 1, 4)  %in% c("1011", "1013") ~ -898/2, 
+                                        str_sub(Stillingsgruppe, 1, 4)  %in% c("1198") ~ -1356/2, 
+                                        TRUE ~ NA_integer_)) %>% 
+  pivot_longer(cols = c("Lopendefaglig", "kontakttid", "undervisningsplikt"), values_to = "timer", names_to = "aktivitet") %>% 
+  ungroup() %>% 
+  mutate(aar = paste(aar), 
+         emne = "Faste poster") %>% 
+  select(navn, aar, semester, emne, aktivitet, timer) %>% 
+  left_join(stab, by = "navn")
+
+
+# fastetillegg %>%
+#   filter(navn == "Bjørn Schiermer Andersen") %>%
+#   # filter(navn == "Agnes Fauske") %>%
+#   View()
+
+
+
+
+# Saldo fra timeregnskapet #### 
+saldo_faste <- read_excel("data/saldo_V23.xlsx", sheet = "faste") %>% 
+  mutate(aar = "2023 V", emne = "Faste poster", aktivitet = "SALDO V23") %>% 
+  select(navn, timer, aar, emne, aktivitet)
+
+saldo_midl <- read_excel("data/saldo_V23.xlsx", sheet = "midlertidige") %>% 
+  mutate(aar = "2023 V", emne = "Faste poster", aktivitet = "SALDO_GJENSTÅENDE V23") %>% 
+  select(navn, timer, aar, emne, aktivitet)
+
+saldo <- bind_rows(saldo_faste, saldo_midl) %>% 
+  filter(navn %in% budsjett$navn) %>%  # beholder kun de som underviser
+  select(navn, timer, aar, emne, aktivitet) %>% 
+  mutate(semester = ifelse(str_sub(aar, -1, -1) == "V", 1, 2),
+         aar = str_sub(aar, 1, 4)) %>% 
+  left_join(stab, by = "navn")
+
+# Plasserer saldoen øverst
+fastsaldo <- bind_rows(fastetillegg, saldo) %>% 
+  mutate(sort = str_sub(aktivitet, 1, 5) %in% c("SALDO")+0) %>% 
+  arrange(navn, aar, semester, desc(sort)) %>% 
+  group_by(navn, aar, semester) %>% 
+  filter( (first(sort) == 1 & sort == 1) | first(sort) != 1) %>%
+  ungroup %>% 
+  select(-sort) 
+
+
+# fastsaldo %>%
+#   filter(navn == "Bjørn Schiermer Andersen") %>%
+#   # filter(navn == "Agnes Fauske") %>%
+#   head()
+
+
+# budsjett %>%
+#   filter(navn == "Frøja Isabella Storm-Mathisen") %>%
+#   View()
+
+#glimpse(budsjett)
+
+
+# Legger til ansattgruppe og sluttdato #### 
+# Fjerner underscore fra aktivitet-streng
+budsjett <- budsjett %>% 
+  left_join(stab[, c("navn", "Stillingsgruppe", "sluttdato")], by = "navn") %>% 
+  # Legger på 15% på undervisningsoppgaver stipendiater
+  mutate(timer = case_when(Stillingsgruppe == "1017 Stipendiat" & 
+                             (aktivitet %in% c("forelesning", 
+                                               "seminargrupper", 
+                                               "ordinær_sensur",
+                                               "emneansvar", 
+                                               "lage_eksamen", 
+                                               "lage_utsatt_eksamen", 
+                                               "sensur_utsatt", 
+                                               "veiledning_ma") ) ~ timer*1.15,
+                           TRUE ~ timer)) %>% 
+  mutate(semester = ifelse(str_sub(aar, -1, -1) == "V", 1, 2),
+         aar = str_sub(aar, 1, 4)) %>% 
+  filter(aar > 2023 | (aar == 2023 & semester == 2))  %>%    ## Velger startår/semester 
+  bind_rows(., fastsaldo) %>% 
+  mutate(aktivitet = str_replace_all(aktivitet, "_", " ") |> str_to_title()) 
+  
+# budsjett %>%
+#   #mutate(aktivitet = str_replace_all(aktivitet, "_", " ") |> str_to_title()) %>%
+#   filter(str_detect(navn, "Synøve")) %>%
+# #   filter(navn == "Alf Jørgen Schnell") %>%
+#    View()
+
+
+budsjett %>% 
+  write_rds("data/timebudsjett.rds")
