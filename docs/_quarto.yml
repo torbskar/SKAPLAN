@@ -1,0 +1,26 @@
+project: 
+  type: book
+  output-dir: docs
+
+book:
+  navbar:
+    search: true
+  title: "SKAPLAN"
+  subtitle: "Undervisningsplanlegging ved ISS, UiO"
+  author: "Torbjørn Skardhamar"
+  date: today
+  version: 0.1
+  page-navigation: true
+  chapters:
+    - index.qmd
+    - oppsett.qmd 
+    - systembeskrivelse.qmd
+    - scriptbeskrivelser.qmd
+
+format:
+  html: 
+    theme: cosmo
+    code-copy: true
+  pdf: default 
+
+

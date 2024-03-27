@@ -22,7 +22,6 @@ if(file.exists("data/stab.Rdat") &
 
 
 # Laster arbeidsbok
-#filnavn <- "emner/KULKOM1001.xlsx"
 
 emnefiler <- list.files("emner/")
 emnefiler <- emnefiler[str_sub(emnefiler, -5, -1) == ".xlsx"] 

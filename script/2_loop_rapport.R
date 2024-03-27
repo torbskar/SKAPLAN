@@ -3,7 +3,7 @@
 # Inndata : timebudsjett.rds
 #           stab.Rdat
 #           
-# Script  : personrapport.qmd
+# Quarto  : personrapport.qmd
 #           emnerapport.qmd
 #           stab_andreFolk.R
 # 
@@ -62,8 +62,8 @@ budsjett <- readRDS("data/timebudsjett.rds") %>%
   fill(Stillingsgruppe)
 
 # budsjett %>%
-#   filter(str_detect(navn, "Arno")) %>% 
-#   select(navn, emne, aar, semester, aktivitet, Stillingsgruppe) 
+#   filter(str_detect(navn, "Hakke")) %>%
+#   select(navn, emne, aar, semester, aktivitet, Stillingsgruppe)
 
 
 # budsjett %>%
@@ -109,6 +109,7 @@ stab_navn <- stab %>%
 
 personer_stab <- personer[( tolower(personer) %in% tolower(stab_navn)) ] %>% unique()
 
+personer_stab <- personer_stab[28:length(personer_stab)]
 
 #personer_stab <- personer_stab[str_detect( personer_stab, "Martin Ar")]
 
@@ -126,6 +127,7 @@ for(person in personer_stab){
   saveRDS(persondata, file= "timebudsjett_person.rds")
   
   ## FUll report
+  person <- gsub("[[:punct:]]", " ", person)  # Fjerner punktum i navn
   filnavn <- paste(person, ".pdf", sep='')
   quarto::quarto_render(input = "personrapport.qmd", 
                     output_file = filnavn) 

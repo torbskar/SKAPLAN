@@ -1,0 +1,45 @@
+# Systembeskrivelse
+
+## Datahåndtering
+
+**Script: 1_leseInnData.R**
+
+Dette scriptet samler data fra alle filer i et samlet datasett og lagrer dette datasettet til disk. Scriptet henter inn flere underscript som kalles med source() for lesbarhetens skyld. Hvert underscript samler en type data og leverer ett R-objekt til hovedscriptet.
+
+Til slutt skrives det ut en rapport med totalsum undervisning per semester for hele staben i en enkelt tabell som legges i samme mappe som emnefilene slik at det er lett tilgjengelig oversikt over stabens kapasitet når man planlegger enkeltemnene.
+
+Scriptet starter med å kjøre en del underscript. Hver av disse kalles med source() for lesbarhet, men også med local = TRUE for å begrense antall objekter i minnet. Script som tar litt tid å kjøre (f.eks. innlesning av timeregnskapsaldo fra pdf-filer) lagrer Rdat-fil og kjøres bare på nytt hvis det er lenge siden sist filen ble laget. Hvis disse Rdat-filene slettes, så kjører scriptet på nytt. Mange andre script er veldig korte og tar ikke noe særlig tid, så har derfor ikke et slikt krav.
+
+
+| Script                           | Funksjon                                                                      |
+|----------------------------------|-------------------------------------------------------------------------------|
+| source("script/emnefiler.R")     | Leser inn alle enkeltfiler for emner og restrukturerer til lang form.         |
+| source("script/veiledning_ma.R") | Leser inn filer for planlagt veiledning (gjelder spesielt OLA4090). Har egen struktur. |
+| source("script/ekstra.R")        | Leser inn oversikt over planlagt ekstra uttelling.                            |
+| source("script/uniped.R")        | Leser inn oversikt over planlagt kurs i uniped |
+| source("script/norskkurs.R")     | Leser inn oversikt over planlagt kurs i norskkurs. Gjelder nyansatte engelskspråklige. |
+| source("script/utenlandsopphold.R") | Leser inn oversikt over planlagt utenlandsopphold. Gjelder phd som får fratrekk for dette. |
+| source("script/verv.R")         | Leser inn oversikt over verv som gir uttelling (programledere, ledergruppe etc) |
+| source("script/frikjop.R")       | Leser inn oversikt over frikjøp. Timene legges inn |
+
+
+Deretter gjøres følgende: 
+
+*	Leser inn fakultetets satser for timeregnskap og andre lokale satser fra filen data/satser.xlsx 
+*	Leser inn oversikt over emner som gir ekstra uttelling ved sensur og lage eksamen. 
+*	Leser inn fil med variasjoner av skrivemåter for enkeltes navn med data/navn_variasjoner.xlsx
+
+Slår sammen alle filer fra ovennevnte script, kobler på satser mot type aktivitet og gjøre utregning. Emner med ekstra uttelling tas med i utregningene. 
+
+Fil med navn på skrivemåter av navn brukes som lookup-fil og korrigerer skrivemåte til korrekt der det er aktuelt. 
+
+Konstruerer en fil med faste tillegg som tilkommer hvert semester. 
+
+Henter inn saldoer fra timeregnskapet med: source("script/leseTimeregnskap_fraPDF.R")
+
+Legger til 15% uttelling for alle stipendiater på undervisningsaktiviteter. 
+
+Lagrer samlet datasett med utregninger til fil. 
+
+Lager en rapport med totalsummer per person per semester til pdf-fil. 
+

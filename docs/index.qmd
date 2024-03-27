@@ -1,0 +1,12 @@
+# Overordnet om SKAPLAN {.unnumbered}
+
+**Merk**: Tidlig versjon av dokumentasjonen. Det er noe gjentakelser og slikt. 
+
+
+Undervisningsplanleggingen er ment å være enkelt i bruk for de som planlegger og all planlegging gjøres på emnenivå. Dette gjøres i relativt enkle Excel-filer. All videre rapportering er basert på aggregering av disse filene. 
+
+Et sett med R-script plukker opp alle data fra enkeltfilene og samler dette i et vanlig datasett. Dermed kan man skrive ut tabeller og annet etter behov. Det betyr at alle oversikter er basert på hva som er skrevet inn i enkeltfilene. 
+
+Det samme gjelder diverse utvidelser: For personrapporter er det en fordel å vite slike ting som sluttdato, forskningstermin, utenlandsopphold, uniped og andre ting som skal gi uttelling eller tas høyde for på annet vis. Hvis man ikke vil inkludere slike ting lar man rett og slett bare være. 
+
+

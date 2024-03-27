@@ -121,11 +121,11 @@ budsjett <- list_all %>%
 
 # unique(budsjett$aktivitet)
 # 
-budsjett %>%
-  filter( str_detect(navn, "Tork")) %>%
-  arrange(aktivitet) %>%
-  select(navn, aar, emne, aktivitet, antall, uttelling, timer) %>%
-  View()
+# budsjett %>%
+#   filter( str_detect(navn, "Tork")) %>%
+#   arrange(aktivitet) %>%
+#   select(navn, aar, emne, aktivitet, antall, uttelling, timer) %>%
+#   View()
 
 
 ## Oversikt over person #### 
@@ -164,10 +164,11 @@ fastetillegg <- stab %>%
   left_join(stab, by = "navn")
 
 
-fastetillegg %>%
-  filter( str_detect(navn, "Martin") ) %>% 
-  # filter(navn == "Agnes Fauske") %>%
-  View()
+
+# fastetillegg %>%
+#   filter( str_detect(navn, "Hakke") ) %>%
+#   # filter(navn == "Agnes Fauske") %>%
+#   View()
 
 
 
@@ -180,7 +181,7 @@ if(file.exists("data/saldo.Rdat") &
             units = "weeks") |> as.numeric() < 8 ){
   load(file = "data/saldo.Rdat")
 } else{
-  source("script/leseTimeregnskap_fraPDF.R")
+  source("script/leseTimeregnskap.R")
 }
 
 
@@ -221,9 +222,9 @@ budsjett <- budsjett %>%
   filter(aar > 2023 | (aar == 2023 & semester == 2))  %>%    ## Velger startår/semester 
   bind_rows(., fastsaldo) %>% 
   mutate(aktivitet = str_replace_all(aktivitet, "_", " ") |> str_to_title()) 
-  
+
 # budsjett %>%
-#   filter(str_detect(navn, "Lars Erik ")) %>% 
+#   filter(str_detect(navn, "Hakke")) %>%
 #   View()
 
 
@@ -244,10 +245,10 @@ budsjett %>%
 
 # budsjett <- read_rds("data/timebudsjett.rds")
 # 
-# budsjett %>%
-#   filter(str_detect(navn, "Martin")) %>%
-#   select(aar, aktivitet, antall, timer, uttelling) %>%
-#   View()
+budsjett %>%
+  filter(str_detect(navn, "Hakke")) %>%
+  #select(aar, aktivitet, antall, timer, uttelling, Stillingsgruppe) %>%
+  View()
 
 
 # Oversiktsrapport #### 

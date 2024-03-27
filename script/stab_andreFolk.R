@@ -8,7 +8,7 @@ library(openxlsx)
 
 
 ## Oversikt over stab siste år #### 
-stab0 <- read_excel("data/stab_2023.xlsx") %>% 
+stab0 <- read_excel("data/stab.xlsx") %>% 
   mutate(navn = `Etter- og fornavn`, 
          Fratredelsesdato = ifelse(Fratredelsesdato == "-", NA_character_, Fratredelsesdato),
          sluttdato = openxlsx::convertToDate(Fratredelsesdato)) %>% 
@@ -18,22 +18,19 @@ stab0 <- read_excel("data/stab_2023.xlsx") %>%
   select(navn, Stillingsgruppe, Dellønnsprosent, sluttdato) %>% 
   mutate(int_ekst = "intern")
 
+# Nyansatte som ikke har begynt ennå etc. og ikke finnes i andre filer
 stab_nye <- readxl::read_excel("data/stab_nye.xlsx") %>% 
   arrange(navn) %>% 
-  #select(navn) %>% 
   mutate(int_ekst = "intern")
 
 stab <- bind_rows(stab_nye, stab0) %>% 
   mutate(navn = str_to_title(navn)) %>% 
   mutate(navn = str_replace(navn, "' ", "'")) %>% 
   group_by(navn) %>% 
-  slice(1) 
+  slice(1)            # Fjerner dubletter - hvis folk er i flere filer 
 
+#save(stab, file = "data/stab.Rdat")
 
-save(stab, file = "data/stab.Rdat")
-
-# stab %>%
-#   filter(str_detect(navn, "Karen"))
 
 
 ## Oversikt over eksterne undervisere og andre navn til lister ####
@@ -73,7 +70,6 @@ TPfolk <- bind_rows(TP) %>% unique() %>% as_tibble()
 
 navneliste <- bind_rows(stab, andrefolk, TPfolk) %>% 
   mutate(navn = str_squish(navn)) %>%  # fjern whitespace og dubletter
-  #mutate(navn = str_to_title(navn)) %>% 
   group_by(navn) %>% 
   slice(1) %>% 
   ungroup() %>%
@@ -109,5 +105,3 @@ navneliste <- bind_rows(stab, andrefolk, TPfolk) %>%
 
 save(navneliste, file = "data/navneliste.Rdat")
 
-# navneliste %>%
-#   filter(str_detect(navn, "Sveinu"))

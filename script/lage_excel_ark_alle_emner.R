@@ -11,28 +11,20 @@ invisible(Sys.setlocale(locale='no_NB.utf8'))
 #year(Sys.Date())
 
 
+# Henter fra web: https://www.uio.no/studier/emner/sv/iss/ og her: https://www.uio.no/studier/emner/sv/sv/ 
+fleremner <- read.delim("data/emner_fraWeb_H.txt") %>% 
+  separate_wider_delim(Emne, names = c("emnekode", "tittel"), delim = "–") %>% 
+  mutate(semester = "H") %>%
+  bind_rows( read.delim("data/emner_fraWeb_V.txt") %>% 
+               separate_wider_delim(Emne, names = c("emnekode", "tittel"), delim = "–") %>% 
+               mutate(semester = "V") ) %>%
+  mutate(emnekode = str_squish(emnekode), 
+         tittel = str_squish(tittel)) %>% 
+  select(emnekode, tittel, semester) 
 
 
-
-# Fra fil med oversikt over emneansvarlige 
-alleemner <- readxl::read_excel("Undervisningsplan_Sosiologi_kopi.xlsx") %>% 
-  rename_with(tolower) %>% 
-  setNames( c(names(.)[1:5], paste0('aar_', names(.)[6:ncol(.)]) ))
-
-# Rydder litt opp. beholder bare emner som fremdeles går
-emneplan <- alleemner %>% 
-  select(1:5, num_range("aar_", year(Sys.Date()):2028)) %>%
-  filter(is.na(avsluttet)) %>% 
-  mutate(emnekode = as.character(map(strsplit(emne, split = " "), 1))) %>% 
-  mutate(emnekode = str_remove(emnekode, ",")) %>% 
-  group_by(emnekode) %>% 
-  slice(1) %>% 
-  ungroup()
-
-
-#emner <- paste0(emneplan$emnekode, "_", str_sub(emneplan$semester, 1,1) ) 
-emner_kode <- emneplan$emnekode
-semester <- str_sub(emneplan$semester, 1,1)
+emner_kode <- fleremner$emnekode
+semester <- fleremner$semester
 length(emner_kode) == length(semester)
 
 # Oppsett for hver side i excel-arkene: variablenavn
@@ -42,28 +34,8 @@ columns <- c("Navn",	"Emneansvar",	"Forelesning",	"Seminargrupper",	"Lage_eksame
 d <- data.frame((matrix(ncol = length(columns), nrow = 1)))
 names(d) <- columns
 
-
-stab0 <- readxl::read_excel("stab.xlsx") %>% 
-  pull(navn)
-
-TPv22 <- read.csv2("TP_personrapport_V22.csv", encoding = "UTF8")
-TPh22 <- read.csv2("TP_personrapport_H22.csv", encoding = "UTF8")
-TPv23 <- read.csv2("TP_personrapport_V23.csv", encoding = "UTF8") 
-TPh23 <- read.csv2("TP_personrapport_H23.csv", encoding = "UTF8") 
-
-TP <- bind_rows(TPv22, TPh22, TPv23, TPh23) %>% 
-  mutate(navn = paste(str_squish( str_split_i(Fagperson, ",", 2) ),
-                       paste0(str_squish( str_split_i(Fagperson, ",", 1) ))
-                       )
-         ) %>% 
-  pull(navn) %>% 
-  unique()
-
-andrefolk <- readxl::read_excel("eksterne_undervisere.xlsx") %>% 
-  pull(navn)
-
-
-stab <- c(stab0, TP, andrefolk) %>% unique() 
+# Oversikt over stab i en fil levert fra kontorsjef
+source("script/stab_andreFolk.R")
 
 # Instruksjon på første linjer
 instruks <- 
