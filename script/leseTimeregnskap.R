@@ -22,13 +22,16 @@ fulltnavn_faste <- stab %>%
   filter(Stillingsgruppe %in% c("1011 Førsteamanuensis", 
                                 "1013 Professor", "1198 Førstelektor")) %>% 
   select(navn) %>%
-  mutate(etternavn = str_extract(navn, "\\w+$")) %>%  # siste ord i string 
+  mutate(etternavn = str_extract(navn, "[\\w-]+\\b$")) %>%  # siste ord i string, inkluder bindestrek 
   mutate(etternavn = case_when(etternavn == "Brien" ~ "O'Brien",
                                etternavn == "Naveda" ~ "Garcia-Godos",
                                TRUE ~ etternavn)) %>% 
   group_by(etternavn) %>% 
   slice(1) %>%              # OBS! Flere med samme etternavn er trøbbel her. Bør fikses i saldo-filen. Gjelder foreløpig kun Bjørn og Synøve
   ungroup()
+
+
+#View(fulltnavn_faste)
 
 ### Rett stavemåte for navn ####
 rettnavn <- read_excel("data/navn_variasjoner.xlsx") %>% 
@@ -46,7 +49,7 @@ bane_timeregnskap_forrige <-  "N:/iss-admfelles/Timeregnskap/2023 Vår/"
 # OBS! I denne filen har faste ansatte kun oppgitt etternavn. Separat fane for SOS og HGO
 #      Midlertidige har fullt navn i to kolonner. 
 
-ifelse( any(grepl("saldo",list.files(bane_timeregnskap)) ) ){
+if( any(grepl("saldo",list.files(bane_timeregnskap)) ) ){
   
   saldofil <- list.files(bane_timeregnskap) %>% 
     str_subset("saldo") %>% 
@@ -56,7 +59,7 @@ ifelse( any(grepl("saldo",list.files(bane_timeregnskap)) ) ){
   sheet_names <- excel_sheets(saldofil)[1:4]
   
   ### Faste ansatte ####
-  saldofaste <- lapply(sheet_names[1:2], function(x) {          # Read all sheets to list
+  saldo_faste <- lapply(sheet_names[1:2], function(x) {          # Read all sheets to list
     as.data.frame(read_excel(saldofil, 
                              sheet = x,
                              skip = 1, 
@@ -80,7 +83,8 @@ ifelse( any(grepl("saldo",list.files(bane_timeregnskap)) ) ){
     select(navn, timer, aar, emne, aktivitet) %>% 
     mutate(navn = ifelse(str_ends(tolower(navn), "brien"),       # OBS! Karen O'Brien gir alltid trøbbel i tekstfunksjoner. Gjør manuell endring.
                                   "Karen Linda O'Brien", navn)) 
-
+# View(saldo_faste)
+   
   ### Midlertidige ansatte ####
   saldo_midl <- lapply(sheet_names[3], function(x) {          # Read all sheets to list
     as.data.frame(read_excel(saldofil, 
@@ -104,12 +108,12 @@ ifelse( any(grepl("saldo",list.files(bane_timeregnskap)) ) ){
                               navn == "Ludvig Sunnemark" ~ "Erik Ludvig Sunnemark",
                               TRUE ~ navn )) 
   
-  ## Samler for både faste og midlertidige ####
-  saldo <- bind_rows(saldofaste, saldo_midl) %>% 
-    left_join(., rettnavn, by = "navn") %>% 
-    mutate(navn = case_when( !is.na(navn) & navn != riktig_navn ~ riktig_navn,
-                             TRUE ~ navn)) %>% 
-    select(-riktig_navn) 
+  # ## Samler for både faste og midlertidige ####
+  # saldo <- bind_rows(saldofaste, saldo_midl) %>% 
+  #   left_join(., rettnavn, by = "navn") %>% 
+  #   mutate(navn = case_when( !is.na(navn) & navn != riktig_navn ~ riktig_navn,
+  #                            TRUE ~ navn)) %>% 
+  #   select(-riktig_navn) 
   
   #glimpse(saldo)
   
@@ -292,17 +296,26 @@ ifelse( any(grepl("saldo",list.files(bane_timeregnskap)) ) ){
              timer = timer + total) %>% 
       select(-total, - oppdatert) 
 
-
-    ## Samler for både faste og midlertidige #### 
-    saldo <- bind_rows(saldo_faste, saldo_midl) %>% 
-      select(navn, timer, aar, emne, aktivitet) %>% 
-      mutate(semester = ifelse(str_sub(aar, -1, -1) == "V", 1, 2),
-             aar = str_sub(aar, 1, 4)) %>%
-      mutate(navn = str_to_title(navn)) %>% 
-      left_join(stab, by = "navn") 
     
     ## Avslutt ifelse for saldo-fil ####
   } 
+
+#View(saldo_faste)
+
+## Samler for både faste og midlertidige #### 
+saldo <- bind_rows(saldo_faste, saldo_midl) %>% 
+  select(navn, timer, aar, emne, aktivitet) %>% 
+  mutate(semester = ifelse(str_sub(aar, -1, -1) == "V", 1, 2),
+         aar = str_sub(aar, 1, 4)) %>%
+  mutate(navn = str_to_title(navn),
+         navn_low = str_to_lower(navn)) %>% 
+  left_join(rettnavn[, c("navn_low", "riktig_navn")], by = "navn_low") %>%
+  mutate(navn = case_when( !is.na(navn) & navn != riktig_navn ~ riktig_navn,
+                           TRUE ~ navn)) %>% 
+  select(-riktig_navn) %>% 
+  left_join(stab, by = "navn") 
+
+#View(saldo)
 
 # Lagre saldo-fil####
 save(saldo, file = "data/saldo.Rdat")

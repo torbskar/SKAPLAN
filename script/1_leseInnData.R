@@ -65,7 +65,13 @@ satser <- read_xlsx("data/satser.xlsx") %>%
   select(kode, uttelling) %>% 
   rename(aktivitet = kode) %>% 
   arrange(aktivitet) %>% 
-  filter(!is.na(uttelling) & !is.na(aktivitet))
+  filter(!is.na(uttelling) & !is.na(aktivitet)) %>% 
+  group_by(aktivitet) %>% 
+  arrange(aktivitet, uttelling) %>% 
+  slice(1) %>%
+  ungroup()
+
+#View(satser)
 
 # Emner som har ikke-standard uttelling
 emner_stor_sensur <- read_xlsx("data/Emner_ekstra_uttelling.xlsx") %>% 
@@ -108,7 +114,7 @@ budsjett <- list_all %>%
          aktivitet = case_when(tolower(aktivitet) == "lage_eksamen" & 
                                  emne %in% emner_stor_eksamen ~ "lage_eksamen2",
                                TRUE ~ aktivitet)) %>%
-  left_join(satser, by = "aktivitet") %>% 
+  dplyr::left_join(satser, by = "aktivitet") %>% 
   mutate(aktivitet = aktivitet_midl,
          uttelling = replace_na(uttelling, 1), 
          timer = ifelse(is.na(timer), antall * uttelling, timer)) %>%           # Regner om til timer der antall er angitt. Ellers beholdes timer angitt. 
@@ -119,12 +125,16 @@ budsjett <- list_all %>%
   select(-aktivitet_midl) # drop midlertidig
 
 
+# budsjett %>% 
+#   filter(emne == "SGO1910") %>% 
+#   head()
+
 # unique(budsjett$aktivitet)
 # 
 # budsjett %>%
-#   filter( str_detect(navn, "Tork")) %>%
+#   filter( str_detect(navn, "Frøja")) %>%
 #   arrange(aktivitet) %>%
-#   select(navn, aar, emne, aktivitet, antall, uttelling, timer) %>%
+#   #select(navn, aar, semester, emne, aktivitet, antall, uttelling, timer) %>%
 #   View()
 
 
@@ -166,7 +176,7 @@ fastetillegg <- stab %>%
 
 
 # fastetillegg %>%
-#   filter( str_detect(navn, "Hakke") ) %>%
+#   filter( str_detect(navn, "Frøja") ) %>%
 #   # filter(navn == "Agnes Fauske") %>%
 #   View()
 
@@ -185,13 +195,16 @@ if(file.exists("data/saldo.Rdat") &
 }
 
 
+# saldo %>%
+#   filter(str_detect(navn, "Frøja"))
+
 
 
 #allenavn <- c(stab$navn, budsjett$navn) %>% unique() %>% sort()
 
-
-# saldo_midl %>%
-#   filter(str_detect(navn, "Frith"))
+View(saldo)
+saldo %>%
+  filter(str_detect(navn, "Frøja")) 
 
 # Plasserer faste poster og saldo øverst ved sortering  ####
 fastsaldo <- bind_rows(fastetillegg, saldo) %>% 
@@ -201,6 +214,14 @@ fastsaldo <- bind_rows(fastetillegg, saldo) %>%
   filter( (first(sort) == 1 & sort == 1) | first(sort) != 1) %>%
   ungroup %>% 
   select(-sort) 
+
+# fastsaldo %>% 
+#   left_join(stab[, c("navn", "Stillingsgruppe", "sluttdato")], by = "navn") %>% 
+#   filter(str_detect(navn, "David")) %>%
+#   View()
+
+# stab[, c("navn", "Stillingsgruppe", "sluttdato")] %>% 
+#   filter(str_detect(navn, "Frøja"))
 
 # Legger til ansattgruppe og sluttdato #### 
 #  Fjerner underscore fra aktivitet-streng
@@ -224,8 +245,9 @@ budsjett <- budsjett %>%
   mutate(aktivitet = str_replace_all(aktivitet, "_", " ") |> str_to_title()) 
 
 # budsjett %>%
-#   filter(str_detect(navn, "Hakke")) %>%
+#   filter(str_detect(navn, "Inga")) %>%
 #   View()
+
 
 
 #  budsjett %>%
@@ -242,24 +264,15 @@ budsjett <- budsjett %>%
 budsjett %>% 
   write_rds("data/timebudsjett.rds")
 
+glimpse(budsjett)
 
 # budsjett <- read_rds("data/timebudsjett.rds")
 # 
-budsjett %>%
-  filter(str_detect(navn, "Hakke")) %>%
-  #select(aar, aktivitet, antall, timer, uttelling, Stillingsgruppe) %>%
-  View()
+# budsjett %>%
+#   filter(str_detect(navn, "Frøja")) %>%
+#   #select(aar, aktivitet, antall, timer, uttelling, Stillingsgruppe) %>%
+#   View()
 
-
-# Oversiktsrapport #### 
-#  Lagrer i overordnet mappe først - deretter flytte. Pga teknisk problem som sikkert kan løses. 
-quarto::quarto_render(input = "personoversikt.qmd", 
-                      output_file = "personoversikt.pdf") 
-
-file.copy(from = paste0(here::here(), "/", "personoversikt.pdf"), 
-          to = paste0(here::here(), "/emner/", "personoversikt.pdf"),
-          overwrite = TRUE)
-file.remove(paste0(here::here(), "/", "personoversikt.pdf"))
 
 
 
