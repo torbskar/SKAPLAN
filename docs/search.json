@@ -47,5 +47,40 @@
     "title": "3  Detaljer om script",
     "section": "3.4 Diverse andre data",
     "text": "3.4 Diverse andre data\nScript:\n\nuniped.R\nverv.R\nekstra.R\nutenlandsopphold.R\nnorskkurs.R\n\nDisse scriptene er ganske like og henter informasjon fra enkel Excel-filer med tilsvarende struktur: kolonner med navn og antall timer avtalt."
+  },
+  {
+    "objectID": "scriptbeskrivelser.html#sikkerhetskopi",
+    "href": "scriptbeskrivelser.html#sikkerhetskopi",
+    "title": "3  Detaljer om script",
+    "section": "3.5 Sikkerhetskopi",
+    "text": "3.5 Sikkerhetskopi\nGenerelt gjøres det sikkerhetskopi til github.uio.no."
+  },
+  {
+    "objectID": "praktisk.html#legge-inn-data",
+    "href": "praktisk.html#legge-inn-data",
+    "title": "4  Praktisk bruk og rutiner",
+    "section": "4.1 Legge inn data",
+    "text": "4.1 Legge inn data\nI prinsippet gjør systemet bare en oppsamling, strukturering og aggregering av data som ligger et sted, primært i Excel-ark. Det er bare oppgaver som er registrert med en person som aggregeres.\n\n4.1.1 Undervisning\nUndervisning er registrert i Excel-ark som ligger i mappen /emner/. Det er en fil for hvert emne, og hvert semester føres i egen fane.\n\n\n4.1.2 Andre data som ikke ligger andre steder (det meste)\nI mappen /data/ ligger Excel-ark som inneholder data som er lagt inn manuelt, herunder verv (utdanningsleder, programledere osv), UNIPED,"
+  },
+  {
+    "objectID": "praktisk.html#utsendelse-med-e-post",
+    "href": "praktisk.html#utsendelse-med-e-post",
+    "title": "4  Praktisk bruk og rutiner",
+    "section": "4.2 Utsendelse med e-post",
+    "text": "4.2 Utsendelse med e-post\nDet viste seg at ISS ikke fører en oppdatert liste over e-postadresser til ansatte utover det som står på ansattsidene på nettet. Scriptet get_email_staff_fromUiOhomepage.R henter ut e-postadresser fra ansattsidene på UiO, og lagrer disse i en fil som brukes til utsendelse av e-post.\nFor praktisk utsendelse brukes Excel og Outlook.^(Det viste seg å være vanskelig å sette opp epostklient direkte fra R, antakeligvis pga. UiO sitt oppsett. Men det er antakeligvis mer driftssikkert i Excel uansett.) Filen send_epost_alle_2024.xlsm har to faner. I fanen “epost” legger man inn navn i kolonne A og e-postadresser i kolonne B. Dette gjøres ved å kopiere fra filen som lages med get_email_staff_fromUiOhomepage.R. Det kan være mangler på hjemmesidene (sommel og slikt hos IT eller andre), så sjekk at alle er med.\nI fanen “personer” legger man inn de som skal ha tilsendt rapport. Navnet må være på formen fornan-etternavn slik som i fanen “e-post”, som også er filnavnet på personrapportene. Kolonne A har navnet, og kolonne B har formelen =XLOOKUP(A22;epost!A:A;epost!B:B) som henter e-postadressen fra fanen “epost” og matcher med navnet. I kolonne C er filbane til der personrapporten ligger. I malen er det samme filbane for alle, men kan altså variere.\nDet er en klikkbar boks i Excel-arket “Send rapport til alle!”. Denne aktiverer et VBA-script som er lagret i filen. Dette scriptet går gjennom listen i fanen “personer” og sender e-post til hver enkelt med vedlagt personrapport. For å åpne VBA-editor er hurtigtast Alt+F11. Scriptet gjør følgende:\n\nSpør deg om du er sikker på om du vil sende epost. Bekrefter du, går det videre. (Du kan altså komme borti knappen uten å skape trøbbel for deg selv.)\nLopper gjennom listen i fanen “personer”. Det kan ikke være personer i listen uten gyldig epostadresse. Da stopper loopen opp.\nÅpner Outlook og oppretter en epost til hver enkelt, med vedlagt personrapport og en kort standard tekst.\n\nDu må selv manuelt klikke på “Send” i hver epost. Dette er mest for å ha mulighet til å sjekke før man sender ut. Det er mulig å endre VBA-scriptet slik at det sender helt automatisk hvis man stoler såpass på at det blir riktig.\nMerk at riktig rapport til hver velges ved å matche mot navnet i kolonne A mot filnavn til rapporten. Navnekonvensjonen er derfor viktig.\nStandardteksten i eposten er lagret i VBA-scriptet. Den kan endres der. Det kan være lurt å teste med en liste med et fåtall personer først for å sjekke. En mulighet kunne sikkert vært å ha et txt-dokument med standardtekst separat som importeres eller andre løsninger, men jeg har tenkt at det er lurt å ha alt samlet i en fil.\n\n4.2.1 Hente eksisterende data"
+  },
+  {
+    "objectID": "praktisk.html#rutiner-og-arbeidsdeling",
+    "href": "praktisk.html#rutiner-og-arbeidsdeling",
+    "title": "4  Praktisk bruk og rutiner",
+    "section": "4.3 Rutiner og arbeidsdeling",
+    "text": "4.3 Rutiner og arbeidsdeling\n\n4.3.1 Opprette nytt emne\n\n\n4.3.2 Endre semester på emne"
+  },
+  {
+    "objectID": "praktisk.html#faq",
+    "href": "praktisk.html#faq",
+    "title": "4  Praktisk bruk og rutiner",
+    "section": "4.4 FAQ",
+    "text": "4.4 FAQ"
   }
 ]
